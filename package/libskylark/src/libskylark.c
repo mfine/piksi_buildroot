@@ -19,9 +19,11 @@
 #define ACCEPT_TYPE  "application/vnd.swiftnav.broker.v1+sbp2"
 #define CONTENT_TYPE "application/vnd.swiftnav.broker.v1+sbp2"
 
-static RC perform(const CURL *curl)
+static RC perform(CURL *curl)
 {
-  (void)curl;
+  for (;;) {
+    curl_easy_perform(curl);
+  }
 
   return E_OK;
 }
@@ -57,11 +59,9 @@ RC skylark_init(void)
   return E_OK;
 }
 
-RC skylark_teardown(void)
+void skylark_teardown(void)
 {
   curl_global_cleanup();
-
-  return E_OK;
 }
 
 RC skylark_download(const skylark_config_t *config)
@@ -71,19 +71,19 @@ RC skylark_download(const skylark_config_t *config)
     return -E_INITIALIZATION_ERROR;
   }
 
-  char device_buf[256];
-  snprintf(device_buf, sizeof(device_buf), "Device-Uid: %s", config->device_uuid);
+  char uuid_buf[256];
+  snprintf(uuid_buf, sizeof(uuid_buf), "Device-Uid: %s", config->uuid);
 
   struct curl_slist *chunk = NULL;
   chunk = curl_slist_append(chunk, "Transfer-Encoding: chunked");
   chunk = curl_slist_append(chunk, "Accept: " ACCEPT_TYPE);
-  chunk = curl_slist_append(chunk, device_buf);
+  chunk = curl_slist_append(chunk, uuid_buf);
 
-  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
-  curl_easy_setopt(curl, CURLOPT_USERAGENT, AGENT_TYPE);
+  curl_easy_setopt(curl, CURLOPT_HTTPHEADER,    chunk);
+  curl_easy_setopt(curl, CURLOPT_USERAGENT,     AGENT_TYPE);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, download);
-  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &config->fd);
-  curl_easy_setopt(curl, CURLOPT_URL, config->url);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA,     &config->fd);
+  curl_easy_setopt(curl, CURLOPT_URL,           config->url);
 
   RC rc = perform(curl);
   curl_easy_cleanup(curl);
@@ -98,20 +98,20 @@ RC skylark_upload(const skylark_config_t *config)
     return -E_INITIALIZATION_ERROR;
   }
 
-  char device_buf[256];
-  snprintf(device_buf, sizeof(device_buf), "Device-Uid: %s", config->device_uuid);
+  char uuid_buf[256];
+  snprintf(uuid_buf, sizeof(uuid_buf), "Device-Uid: %s", config->uuid);
 
   struct curl_slist *chunk = NULL;
   chunk = curl_slist_append(chunk, "Transfer-Encoding: chunked");
   chunk = curl_slist_append(chunk, "Content-Type: " CONTENT_TYPE);
-  chunk = curl_slist_append(chunk, device_buf);
+  chunk = curl_slist_append(chunk, uuid_buf);
 
-  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
-  curl_easy_setopt(curl, CURLOPT_USERAGENT, AGENT_TYPE);
+  curl_easy_setopt(curl, CURLOPT_HTTPHEADER,   chunk);
+  curl_easy_setopt(curl, CURLOPT_USERAGENT,    AGENT_TYPE);
   curl_easy_setopt(curl, CURLOPT_READFUNCTION, upload);
-  curl_easy_setopt(curl, CURLOPT_READDATA, &config->fd);
-  curl_easy_setopt(curl, CURLOPT_URL, config->url);
-  curl_easy_setopt(curl, CURLOPT_PUT, 1L);
+  curl_easy_setopt(curl, CURLOPT_READDATA,     &config->fd);
+  curl_easy_setopt(curl, CURLOPT_URL,          config->url);
+  curl_easy_setopt(curl, CURLOPT_PUT,          1L);
 
   RC rc = perform(curl);
   curl_easy_cleanup(curl);

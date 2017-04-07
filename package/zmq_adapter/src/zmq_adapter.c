@@ -70,7 +70,7 @@ static void debug_printf(const char *msg, ...)
 
   va_list ap;
   va_start(ap, msg);
-  vprintf(msg, ap);
+  vfprintf(stderr, msg, ap);
   va_end(ap);
 }
 

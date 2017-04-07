@@ -22,13 +22,13 @@ typedef enum {
 
 typedef struct {
   const char *url;
-  const char *device_uuid;
+  const char *uuid;
   int fd;
 } skylark_config_t;
 
 RC skylark_init(void);
 
-RC skylark_teardown(void);
+void skylark_teardown(void);
 
 RC skylark_download(const skylark_config_t *config);
 
