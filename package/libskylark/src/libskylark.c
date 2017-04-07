@@ -227,9 +227,7 @@ static size_t download_callback(char *ptr, size_t size, size_t nmemb,
 {
   int *fd = (int *)userdata;
   ssize_t m = write(*fd, ptr, size * nmemb);
-#ifdef VERBOSE
   log_error("download_callback! size=%d items=%d\n", (int)size, (int)nmemb);
-#endif
   return m;
 }
 
@@ -246,7 +244,7 @@ static size_t download_callback(char *ptr, size_t size, size_t nmemb,
  * \param verbose  Verbose output
  * \return  RC return code indicating success or failure
  */
-RC download_process(client_config_t *config, bool verbose)
+RC download_process(client_config_t *config)
 {
   CURL *curl = curl_easy_init();
   if (curl == NULL) {
@@ -255,9 +253,7 @@ RC download_process(client_config_t *config, bool verbose)
   curl_easy_setopt(curl, CURLOPT_URL, config->endpoint_url);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, download_callback);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &config->fd);
-  if (verbose) {
-    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-  }
+  curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
   curl_easy_setopt(curl, CURLOPT_USERAGENT, USER_AGENT);
   struct curl_slist *chunk = NULL;
   chunk = curl_slist_append(chunk, STREAM_ENCODING);
@@ -265,6 +261,7 @@ RC download_process(client_config_t *config, bool verbose)
   chunk = curl_slist_append(chunk, config->device_header);
   curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
   CURLcode res = curl_easy_perform(curl);
+  log_error("XXXXXX download_callback finished %d\n", res);
   if (res != CURLE_OK) {
     log_curl_error(res);
     curl_easy_cleanup(curl);
@@ -290,9 +287,7 @@ static size_t upload_callback(char *buffer, size_t size, size_t nitems,
 {
   int *fd = (int *)instream;
   ssize_t m = read(*fd, buffer, size * nitems);
-#ifdef VERBOSE
-  log_error("upload_callback! size=%d items=%d\n", (int)size, (int)nitems);
-#endif
+  log_error("upload_callback! size=%d items=%d m=%d\n", (int)size, (int)nitems, (int)m);
   if (m < 0) {
     return CURL_READFUNC_ABORT;
   }
@@ -312,7 +307,7 @@ static size_t upload_callback(char *buffer, size_t size, size_t nitems,
  * \param verbose  Verbose output
  * \return  RC return code indicating success or failure
  */
-RC upload_process(client_config_t *config, bool verbose)
+RC upload_process(client_config_t *config)
 {
   CURL *curl = curl_easy_init();
   if (curl == NULL) {
@@ -322,9 +317,7 @@ RC upload_process(client_config_t *config, bool verbose)
   curl_easy_setopt(curl, CURLOPT_PUT, 1L);
   curl_easy_setopt(curl, CURLOPT_READFUNCTION, upload_callback);
   curl_easy_setopt(curl, CURLOPT_READDATA, &config->fd);
-  if (verbose) {
-    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-  }
+  curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
   curl_easy_setopt(curl, CURLOPT_USERAGENT, USER_AGENT);
   struct curl_slist *chunk = NULL;
   chunk = curl_slist_append(chunk, STREAM_ENCODING);
@@ -341,6 +334,7 @@ RC upload_process(client_config_t *config, bool verbose)
   // Loop until we've exceeded our retries.
   for (;;) {
     CURLcode res = curl_easy_perform(curl);
+    log_error("XXXXXX upload_callback finished %d\n", res);
     if (res != CURLE_OK) {
       log_curl_error(res);
       ret = E_PUB_CONNECTION_ERROR;

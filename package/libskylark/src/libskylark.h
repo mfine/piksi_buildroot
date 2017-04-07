@@ -22,9 +22,7 @@
  *  Logging utilities.
  */
 
-#define log_info(...) fprintf(stdout, __VA_ARGS__)
 #define log_debug(...) fprintf(stderr, __VA_ARGS__)
-#define log_warn(...) fprintf(stderr, __VA_ARGS__)
 #define log_error(...) fprintf(stderr, __VA_ARGS__)
 
 /**
@@ -135,7 +133,7 @@ void teardown_globals(void);
 
 // size_t download_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
 
-RC download_process(client_config_t *config, bool verbose);
+RC download_process(client_config_t *config);
 
 /**
  *  Upload processes, for base stations and reference station processing.
@@ -144,6 +142,6 @@ RC download_process(client_config_t *config, bool verbose);
 /* size_t upload_callback(char *buffer, size_t size, size_t nitems, */
 /*                        void *instream); */
 
-RC upload_process(client_config_t *config, bool verbose);
+RC upload_process(client_config_t *config);
 
 #endif /* SWIFTNAV_LIBSKYLARK_H */

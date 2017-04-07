@@ -25,7 +25,6 @@
 // Global configuration variables required for this daemon application.
 static const char *named_source = NULL;
 static const char *endpoint = NULL;
-static bool verbose_logging = false;
 static bool enabled = false;
 
 static int num_retries = 0;
@@ -47,8 +46,6 @@ static void usage(char *command)
   puts("\t--retry-delay <seconds>");
   puts("\nRetry Max Time - Maximum time to keep retrying (seconds) (default: 0)");
   puts("\t--retry-max-time <seconds>");
-  puts("\t-v --verbose");
-  puts("\t\tWrite status to stderr");
 }
 
 static int parse_options(int argc, char *argv[])
@@ -61,7 +58,6 @@ static int parse_options(int argc, char *argv[])
   const struct option long_opts[] = {
       {"sub", required_argument, 0, 's'},
       {"endpoint", required_argument, 0, 'e'},
-      {"verbose", no_argument, 0, 'v'},
       {"num_retries", required_argument, 0, OPT_NUM_RETRIES},
       {"retry_delay", required_argument, 0, OPT_RETRY_DELAY},
       {"retry_max_time", required_argument, 0, OPT_RETRY_MAX_TIME},
@@ -76,10 +72,6 @@ static int parse_options(int argc, char *argv[])
       }
       case 'e': {
         endpoint = optarg;
-        break;
-      }
-      case 'v': {
-        verbose_logging = true;
         break;
       }
       case OPT_NUM_RETRIES: {
@@ -140,7 +132,7 @@ int main(int argc, char *argv[])
     log_client_error(rc);
     exit(EXIT_FAILURE);
   }
-  if ((rc = upload_process(&config, verbose_logging)) < NO_ERROR) {
+  if ((rc = upload_process(&config)) < NO_ERROR) {
     log_client_error(rc);
     exit(EXIT_FAILURE);
   }

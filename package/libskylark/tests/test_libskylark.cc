@@ -97,11 +97,10 @@ TEST(skylark_connection, upload_process)
   ASSERT_EQ(rc, NO_ERROR);
   rc = setup_globals();
   ASSERT_EQ(rc, NO_ERROR);
-  bool verbose_logging = false;
   //MockedPipe pipe("/tmp/skylark_upload_test_fifo", true);
   config.fd = 0;
   strcpy(config.endpoint_url, "localhost:8080");
-  rc = upload_process(&config, verbose_logging);
+  rc = upload_process(&config);
   ASSERT_EQ(rc, E_PUB_CONNECTION_ERROR);
   teardown_globals();
 }
